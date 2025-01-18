@@ -68,6 +68,12 @@ if(currentPage == "writer"){
         console.log("reader1");
         loadNotesFromLocalStorage();
         renderNotes();
+        window.addEventListener("storage", () => {
+            if(event.key === "notes"){
+                loadNotesFromLocalStorage();
+                renderNotes();
+            }
+        });
     });
 }
 
