@@ -5,7 +5,7 @@ const currentPage = document.body.getAttribute("data-page");
 
 
 
-//chatGpt
+//chatGpt for updating time 
 function updateLastSavedTime(){
     let lastSaved = document.getElementById("lastSaved"); // added
     let now = new Date();
@@ -19,9 +19,10 @@ function updateLastUpdatedTime(){
 }
 
 
-// Function to save notes to localStorage
+// Function to save notes array to localStorage
 function saveNotesToLocalStorage() {
     localStorage.setItem("notes", JSON.stringify(notes));
+    //after saving notes to local storage, update the last saved time
     updateLastSavedTime();
 }
 
@@ -36,7 +37,9 @@ function renderNotes(){
     notesContainer.innerHTML = "";
     notes.forEach((noteObj) => {
         const noteDiv = document.createElement("div");
+        
         noteDiv.textContent = noteObj.content;
+        noteDiv.style.paddingLeft = "5px";
         noteDiv.style.backgroundColor = "#FFFF8D";
         noteDiv.style.width = "300px";
         noteDiv.style.height = "100px";
@@ -46,16 +49,16 @@ function renderNotes(){
 
     updateLastUpdatedTime()
    
-
 }
 
+// check the current data-page to perform the correct functions
 if(currentPage == "writer"){
     console.log("writer");
     document.addEventListener("DOMContentLoaded", ()=> {
         const addBtn = document.getElementById("addBtn");
         
         addBtn.addEventListener("click", ()=>{
-            let newNote = new note("",notes.length);
+            let newNote = new note("");
             notes.push(newNote);
             newNote.add();
             console.log("note contents" +newNote.content);
@@ -65,11 +68,10 @@ if(currentPage == "writer"){
     });
 } else if(currentPage == "reader"){
     document.addEventListener("DOMContentLoaded", ()=> {
-        console.log("reader1");
         loadNotesFromLocalStorage();
         renderNotes();
         window.addEventListener("storage", () => {
-            if(event.key === "notes"){
+            if(key === "notes"){
                 loadNotesFromLocalStorage();
                 renderNotes();
             }
@@ -78,32 +80,25 @@ if(currentPage == "writer"){
 }
 
 class note{
-    constructor(content,id){
+    constructor(content){
         this.content = content;
-        this.id = id;
-
         this.textArea = document.createElement("textarea");
         this.textArea.value = this.content;
-        this.textArea.id = this.id;
         this.textArea.style.backgroundColor = "#FFFF8D";
         this.textArea.style.width = "300px";
         this.textArea.style.height = "100px";
         this.textArea.addEventListener("input",()=>{
             this.content = this.textArea.value;
-            this.saveNotes();
-            // renderNotes();
+            saveNotesToLocalStorage();
         });
 
 
         this.button = document.createElement("button");
-        this.button.id = "removeBtn";
-        
         this.button.innerHTML = "Remove";
         this.button.style.backgroundColor = "orange";
         this.button.style.marginLeft = "50px";
 
         this.div = document.createElement("div");
-        this.div.id = this.id;
         this.div.style.display = "flex";
         this.div.style.alignItems = "center";
         this.div.style.marginBottom = "20px";
@@ -119,38 +114,6 @@ class note{
 
     add(){
         writerContainer.appendChild(this.div);
-        console.log("id" + this.id);
         console.log("content"+ this.content);
     }
-
-    store(){
-        this.content = this.textArea.value;
-    }
-    
-    saveNotes(){
-        let encryptNotes = JSON.stringify(notes);
-        localStorage.setItem("notes", encryptNotes);
-        console.log("encryptNotes: " + encryptNotes);
-        updateLastSavedTime();
-    }
-
-
-
-
 }
-
-
-
-
-// if(typeof(Storage) == "undefined"){
-//     document.write(msg_notSupported);
-//     console.log(msg_notSupported);
-//     window.stop();
-// } 
-// localStorage.setItem(id, content);
-
-// if (typeof (Storage) == "undefined") {
-//     document.write(msg_notSupported);
-//     window.stop();
-//     }
-//     document.write(msg_read+msg_key+":"+localStorage.getItem(msg_key));
