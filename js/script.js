@@ -6,100 +6,45 @@ const currentPage = document.body.getAttribute("data-page");
 
 
 //chatGpt for updating time 
-function updateLastSavedTime(){
-    let lastSaved = document.getElementById("lastSaved"); // added
+function updateTime(currentPage){
+    let content;
     let now = new Date();
-    lastSaved.textContent = `stored at: ${now.toLocaleTimeString()}`;
+
+    if(currentPage === "writer"){
+        content = document.getElementById("lastSaved");
+        content.textContent = `stored at: ${now.toLocaleTimeString()}`;
+    } else if(currentPage === "reader"){
+        content = document.getElementById("lastUpdated");
+        content.textContent = `updated at: ${now.toLocaleTimeString()}`;
+    }
+    
 }
 
-function updateLastUpdatedTime(){
-    let lastUpdated = document.getElementById("lastUpdated"); // added
-    let now = new Date();
-    lastUpdated.textContent = `updated at: ${now.toLocaleTimeString()}`;
-}
-
-
-// Function to save notes array to localStorage
-function saveNotesToLocalStorage() {
-    localStorage.setItem("notes", JSON.stringify(notes));
-    //after saving notes to local storage, update the last saved time
-    updateLastSavedTime();
-}
-
-function loadNotesFromLocalStorage(){
-    const storedNotes = localStorage.getItem("notes");
-    notes = JSON.parse(storedNotes);
-}
-
-function renderNotes(){
-    console.log("note array length" + notes.length);
-    const notesContainer = document.getElementById("notesContainer");
-    notesContainer.innerHTML = "";
-    notes.forEach((noteObj) => {
-        const noteDiv = document.createElement("div");
-        
-        noteDiv.textContent = noteObj.content;
-        noteDiv.style.paddingLeft = "5px";
-        noteDiv.style.backgroundColor = "#FFFF8D";
-        noteDiv.style.width = "300px";
-        noteDiv.style.height = "100px";
-        noteDiv.style.marginBottom = "20px";
-        notesContainer.appendChild(noteDiv);
-    });
-    updateLastUpdatedTime()
-}
-
-// check the current data-page to perform the correct functions
-//chatGPT idea for current page checking. Because I write all js code in one file
-// I need to check the current page to perform the correct functions.
-if(currentPage == "writer"){
-    console.log("writer");
-    document.addEventListener("DOMContentLoaded", ()=> {
-        loadNotesFromLocalStorage();
-        renderNotes();
-        const addBtn = document.getElementById("addBtn");
-        
-        addBtn.addEventListener("click", ()=>{
-            let newNote = new note("");
-            notes.push(newNote);
-            newNote.add();
-            console.log("note contents" +newNote.content);
-            saveNotesToLocalStorage();
-        });           
-     
-    });
-} else if(currentPage == "reader"){
-    document.addEventListener("DOMContentLoaded", ()=> {
-        loadNotesFromLocalStorage();
-        renderNotes();
-        window.addEventListener("storage", () => {
-            if(event.key === "notes"){
-                loadNotesFromLocalStorage();
-                renderNotes();
-            }
-        });
-    });
-}
-
-class note{
-    constructor(content){
-        this.content = content;
+class Note{
+    constructor(){
+        this.content = "";
+        this.id = Date.now(); // chatGPT to generate unique id for each note
+        //create the textarea
         this.textArea = document.createElement("textarea");
         this.textArea.value = this.content;
         this.textArea.style.backgroundColor = "#FFFF8D";
         this.textArea.style.width = "300px";
         this.textArea.style.height = "100px";
+
+        //when the content of the textarea changes, update the content of the note
         this.textArea.addEventListener("input",()=>{
             this.content = this.textArea.value;
+            updateTime("writer")
             saveNotesToLocalStorage();
         });
 
-
+        //create the remove button
         this.button = document.createElement("button");
         this.button.innerHTML = "Remove";
         this.button.style.backgroundColor = "orange";
         this.button.style.marginLeft = "50px";
 
+        //create the div that contains the textarea and the button
         this.div = document.createElement("div");
         this.div.style.display = "flex";
         this.div.style.alignItems = "center";
@@ -107,15 +52,108 @@ class note{
         this.div.style.width = "100%";
         this.div.appendChild(this.textArea);
         this.div.appendChild(this.button);
-        this.div.style.borderSpacing = "20px"; 
-
-        this.button.addEventListener("click",()=>{
-            this.div.remove();
-        });
+        this.div.style.borderSpacing = "20px";
+        
+        this.button.addEventListener("click", () => {
+            const index = notes.findIndex(note => note.id === this.id);
+            if(index != -1){
+                notes.splice(index,1);
+                this.div.remove();
+            }
+            console.log("before ", notes)
+            saveNotesToLocalStorage();
+            console.log("after ", notes)
+        })
+        
     }
 
-    add(){
+    addDiv(writerContainer){
         writerContainer.appendChild(this.div);
-        console.log("content"+ this.content);
+        this.textArea.value = this.content;
+        saveNotesToLocalStorage();
     }
+
+    addDivContent(readerContainer){
+
+        this.div.remove(this.button);
+        this.div.remove(this.textArea);
+        this.div.style.backgroundColor = "#FFFF8D";
+        this.div.style.height = "100px";
+        this.div.style.width = "300px";
+        this.div.textContent = this.content;
+        this.div.style.alignItems = "start";
+        this.div.style.padding = "5px";
+        readerContainer.appendChild(this.div);
+    }
+
+    
+}
+
+
+function saveNotesToLocalStorage(){
+    localStorage.setItem("notes", JSON.stringify(notes))
+}
+
+
+//chatGPT to recreate Note instance after parsing the JSON notes from local storage
+function loadLocalStorage(){
+
+    console.log("loading notes from local storage", notes)
+    const loadedNotes = localStorage.getItem("notes");
+    if(loadedNotes){
+        parsedNotes = JSON.parse(loadedNotes);
+        return parsedNotes.map((noteData) => {
+            const note = new Note();
+            note.content = noteData.content;
+            return note;
+        })
+    }
+    return [];
+}
+
+
+function renderNotes(container){
+    
+    if(notes){
+        const notesContainer = document.getElementById(container);
+        notes.forEach((noteObj) =>{
+            if(container === "writerContainer"){
+                noteObj.addDiv(notesContainer);
+            } else if(container === "readerContainer"){
+                noteObj.addDivContent(notesContainer);
+            }
+        })
+    }
+}
+
+
+if(currentPage === "writer"){
+    //addBtn event listener
+    const addBtn = document.getElementById("addBtn")
+
+    addBtn.addEventListener("click",  () => {
+        const newNote = new Note();
+        notes.push(newNote);
+        newNote.addDiv(writerContainer);
+        updateTime(currentPage);        
+    })
+
+    notes = loadLocalStorage();
+    renderNotes("writerContainer");
+} else if(currentPage === "reader"){
+    updateTime(currentPage);
+    const readerContainer = document.getElementById("readerContainer");
+    // readerContainer.innerHTML = ""
+    notes = loadLocalStorage();
+    renderNotes("readerContainer");
+    console.log("note now", notes)
+    window.addEventListener("storage", (event) => {
+        readerContainer.innerHTML = ""
+        if(event.key === "notes"){
+            notes = loadLocalStorage();
+            renderNotes("readerContainer");
+        }
+        updateTime(currentPage);
+    })
+    
 }
