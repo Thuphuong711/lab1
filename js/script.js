@@ -46,15 +46,17 @@ function renderNotes(){
         noteDiv.style.marginBottom = "20px";
         notesContainer.appendChild(noteDiv);
     });
-
     updateLastUpdatedTime()
-   
 }
 
 // check the current data-page to perform the correct functions
+//chatGPT idea for current page checking. Because I write all js code in one file
+// I need to check the current page to perform the correct functions.
 if(currentPage == "writer"){
     console.log("writer");
     document.addEventListener("DOMContentLoaded", ()=> {
+        loadNotesFromLocalStorage();
+        renderNotes();
         const addBtn = document.getElementById("addBtn");
         
         addBtn.addEventListener("click", ()=>{
