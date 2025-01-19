@@ -31,6 +31,7 @@ class Note{
         //when the content of the textarea changes, update the content of the note
         this.textArea.addEventListener("input",()=>{
             this.content = this.textArea.value;
+            //update Time and save note to local storage when there is a change in the content
             updateTime("writer")
             saveNotesToLocalStorage();
         });
@@ -145,6 +146,7 @@ if(currentPage === "writer"){
     notes = loadLocalStorage();
     renderNotes("readerContainer");
     console.log("note now", notes)
+    //chatGPT idea for updating the notes in reader page when the notes are updated in writer page
     window.addEventListener("storage", (event) => {
         readerContainer.innerHTML = ""
         if(event.key === "notes"){
