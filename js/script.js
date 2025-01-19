@@ -20,7 +20,7 @@ function updateTime(currentPage){
 class Note{
     constructor(){
         this.content = "";
-        this.id = Date.now(); // chatGPT to generate unique id for each note
+        this.id = Date.now(); // chatGPT to generate unique id for each note for later use in removing notes
         //create the textarea
         this.textArea = document.createElement("textarea");
         this.textArea.value = this.content;
@@ -70,16 +70,16 @@ class Note{
         saveNotesToLocalStorage();
     }
 
+    //chatGPT to add div content for reader page
     addDivContent(readerContainer){
-
-        this.div.remove(this.button);
-        this.div.remove(this.textArea);
+        this.div = document.createElement("div");
         this.div.style.backgroundColor = "#FFFF8D";
         this.div.style.height = "100px";
         this.div.style.width = "300px";
         this.div.textContent = this.content;
         this.div.style.alignItems = "start";
         this.div.style.padding = "5px";
+        this.div.style.marginBottom = "20px";
         readerContainer.appendChild(this.div);
     }
 
@@ -124,6 +124,7 @@ function renderNotes(container){
 }
 
 
+//chatGPT idea for checking the currentPage as I only use 1 js file for both writer and reader
 if(currentPage === "writer"){
     //addBtn event listener
     const addBtn = document.getElementById("addBtn")
