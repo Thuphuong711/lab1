@@ -1,8 +1,5 @@
 let notes = [];
-
-let notesContainer;
 const currentPage = document.body.getAttribute("data-page");
-
 
 
 //chatGpt for updating time 
