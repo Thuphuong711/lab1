@@ -71,7 +71,7 @@ if(currentPage == "writer"){
         loadNotesFromLocalStorage();
         renderNotes();
         window.addEventListener("storage", () => {
-            if(key === "notes"){
+            if(event.key === "notes"){
                 loadNotesFromLocalStorage();
                 renderNotes();
             }
